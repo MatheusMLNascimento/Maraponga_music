@@ -1,10 +1,12 @@
-// ...existing imports...
-// ignore_for_file: deprecated_member_use
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'search_page.dart';
-import './components/components.dart';
+import '../components/playlist_card.dart';
+import '../components/custom_app_bar.dart';
+import 'package:provider/provider.dart';
+import '../service/player_provider.dart';
+import '../service/local_database.dart';
+import 'library_page.dart'; // Adicione este import para a página de biblioteca
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,60 +19,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _selectedIndex = 0;
   int _selectedPlaylist = 0;
   String selectedGenre = 'Romance';
-  double _progress = 0.0;
-  bool _isPlaying = false;
-  bool _isFavorite = false;
-  Timer? _progressTimer;
-
-  final List<Map<String, dynamic>> playlists = <Map<String, dynamic>>[
-    {
-      'title': 'Amianto',
-      'artist': 'Supercombo e Chrono',
-      'items': 21,
-      'duration': '43:05',
-      'image': 'assets/amianto.png',
-    },
-    {
-      'title': 'Adeus, Aurora',
-      'artist': 'Supercombo',
-      'items': 32,
-      'duration': '1:03:00',
-      'image': 'assets/adeus_aurora.png',
-    },
-    {
-      'title': 'Rogério',
-      'artist': 'M4rkim e outros...',
-      'items': 133,
-      'duration': '10:43:05',
-      'image': 'assets/rogerio.png',
-    },
-    {
-      'title': 'Infame',
-      'artist': 'Supercombo e outros...',
-      'items': 9,
-      'duration': '23:26',
-      'image': 'assets/infame.png',
-    },
-    {
-      'title': 'Mega mix',
-      'artist': 'Supercombo e outros...',
-      'items': 29,
-      'duration': '52:19',
-      'image': 'assets/mega_mix.png',
-    },
-  ];
 
   @override
-  void dispose() {
-    _progressTimer?.cancel();
-    super.dispose();
+  void initState() {
+    super.initState();
+    LocalDatabase().init().then((_) {
+      setState(() {});
+    });
   }
 
+  // Navega entre as abas do app
   void _onNavTapped(int index) {
     if (index == 1) {
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (context) => const SearchPage()));
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const SearchPage()));
+    } else if (index == 2) {
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const LibraryPage()));
     } else {
       setState(() {
         _selectedIndex = index;
@@ -78,174 +41,66 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  void _onPlaylistTap(int index) async {
+  // Seleciona uma playlist e atualiza o player global
+  void _onPlaylistTap(int index, List<PlaylistData> playlists) async {
+    final player = Provider.of<PlayerProvider>(context, listen: false);
+    final playlistData = playlists[index];
+    // Converte PlaylistData para Playlist
+    final playlist = Playlist(
+      title: playlistData.title,
+      artist: playlistData.artist,
+      items: playlistData.items,
+      duration: playlistData.duration,
+      image: playlistData.image, tracks: [],
+    );
+    player.setPlaylist(playlist);
+    await Future.delayed(const Duration(milliseconds: 200));
     setState(() {
       _selectedPlaylist = index;
-      _progress = 0.0;
-      _isPlaying = false;
-      _isFavorite = false;
-    });
-    await Future.delayed(const Duration(milliseconds: 200));
-  }
-
-  void _togglePlayPause() {
-    setState(() {
-      _isPlaying = !_isPlaying;
-    });
-    if (_isPlaying) {
-      _progressTimer = Timer.periodic(const Duration(milliseconds: 500), (
-        timer,
-      ) {
-        setState(() {
-          _progress += 0.01;
-          if (_progress >= 1.0) {
-            _progress = 0.0;
-            _isPlaying = false;
-            timer.cancel();
-          }
-        });
-      });
-    } else {
-      _progressTimer?.cancel();
-    }
-  }
-
-  void _toggleFavorite() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
-  }
-
-  void _onSeek(double value) {
-    setState(() {
-      _progress = value;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final double imageSize = size.width * 0.15 > 80 ? 80 : size.width * 0.15;
-    final double playerImageSize =
-        size.width * 0.12 > 60 ? 60 : size.width * 0.12;
-    final double fontSizeTitle = size.width * 0.05;
-    final double fontSizeSubtitle = size.width * 0.035;
-    final genres = ['Jazz', 'Rock', 'Romance'];
+    final genres = LocalDatabase().getAllGenres();
+    final playlists = LocalDatabase().getTop5Playlists();
 
     return Scaffold(
-      appBar: AppBar(
-        leading: Padding(
-          padding: EdgeInsets.all(size.width * 0.02),
-          child: Icon(
-            Icons.music_note,
-            size: size.width * 0.09,
-            color: Colors.deepOrange,
-          ),
-        ),
-        title: Text(
-          'Maraponga Music',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: fontSizeTitle,
-          ),
-        ),
-        actions: <Widget>[
-          Row(
-            children: <Widget>[
-              Text('Username', style: TextStyle(fontSize: fontSizeSubtitle)),
-              SizedBox(width: size.width * 0.02),
-              CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Icon(
-                  Icons.person,
-                  color: Colors.black,
-                  size: fontSizeSubtitle * 1.2,
-                ),
-              ),
-              SizedBox(width: size.width * 0.04),
-            ],
-          ),
-        ],
-        backgroundColor: Colors.black,
-        elevation: 0,
-      ),
+      appBar: CustomAppBar(size: size),
       body: Column(
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.symmetric(
-              vertical: size.height * 0.015,
-              horizontal: size.width * 0.02,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ...genres.map((genre) {
-                  final isSelected = selectedGenre == genre;
-                  return ChoiceChip(
-                    label: Text(
-                      genre,
-                      style: TextStyle(fontSize: fontSizeSubtitle),
-                    ),
-                    selected: isSelected,
-                    selectedColor: Colors.deepOrange.withOpacity(0.5),
-                    onSelected: (_) {
-                      setState(() => selectedGenre = genre);
-                    },
-                    backgroundColor: const Color(0xFF232323),
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : Colors.white70,
-                    ),
-                  );
-                }),
-                Icon(
-                  Icons.more_horiz,
-                  color: Colors.white,
-                  size: fontSizeTitle,
-                ),
-              ],
-            ),
-          ),
+          _buildGenreChips(genres, size),
           Expanded(
             child: Scrollbar(
               thumbVisibility: true,
               child: ListView.builder(
                 itemCount: playlists.length,
                 itemBuilder: (context, index) {
-                  final playlist = playlists[index];
+                  final playlistData = playlists[index];
+                  final playlist = Playlist(
+                    title: playlistData.title,
+                    artist: playlistData.artist,
+                    items: playlistData.items,
+                    duration: playlistData.duration,
+                    image: playlistData.image, tracks: [],
+                  );
                   return PlaylistCard(
-                    title: playlist['title'],
-                    artist: playlist['artist'],
-                    items: playlist['items'],
-                    duration: playlist['duration'],
-                    image: playlist['image'],
-                    imageSize: imageSize,
-                    fontSizeTitle: fontSizeTitle,
-                    fontSizeSubtitle: fontSizeSubtitle,
-                    size: size,
+                    playlist: playlist,
                     selected: _selectedPlaylist == index,
-                    onTap: () => _onPlaylistTap(index),
+                    onTap: () async {
+                      await LocalDatabase().updatePlaylistAccess(playlistData.id);
+                      _onPlaylistTap(index, playlists);
+                    },
+                    size: size,
                   );
                 },
               ),
             ),
           ),
-          ActualSongCard(
-            title: playlists[_selectedPlaylist]['title'],
-            artist: playlists[_selectedPlaylist]['artist'],
-            image: playlists[_selectedPlaylist]['image'],
-            imageSize: playerImageSize,
-            fontSizeTitle: fontSizeTitle,
-            fontSizeSubtitle: fontSizeSubtitle,
-            size: size,
-            progress: _progress,
-            onSeek: _onSeek,
-            isPlaying: _isPlaying,
-            onPlayPause: _togglePlayPause,
-            isFavorite: _isFavorite,
-            onFavorite: _toggleFavorite,
-          ),
         ],
       ),
+      // Barra de navegação inferior
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         backgroundColor: Colors.black,
@@ -256,12 +111,55 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Busca'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.library_music),
-            label: 'Biblioteca',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.library_music), label: 'Biblioteca'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Config'),
         ],
+      ),
+    );
+  }
+
+  // Constrói os chips de seleção de gênero
+  Widget _buildGenreChips(List<String> genres, Size size) {
+    final double fontSizeSubtitle = size.width * 0.035;
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: size.height * 0.015,
+        horizontal: size.width * 0.02,
+      ),
+      // Corrigido: Use SingleChildScrollView horizontal para evitar overflow
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            ...genres.map((genre) {
+              final isSelected = selectedGenre == genre;
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: ChoiceChip(
+                  label: Text(
+                    genre,
+                    style: TextStyle(fontSize: fontSizeSubtitle),
+                  ),
+                  selected: isSelected,
+                  selectedColor: Colors.deepOrange.withAlpha((0.5 * 255).toInt()),
+                  onSelected: (_) {
+                    setState(() => selectedGenre = genre);
+                  },
+                  backgroundColor: const Color(0xFF232323),
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : Colors.white70,
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.more_horiz,
+              color: Colors.white,
+              size: size.width * 0.05,
+            ),
+          ],
+        ),
       ),
     );
   }
