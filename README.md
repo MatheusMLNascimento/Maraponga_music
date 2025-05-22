@@ -1,16 +1,45 @@
-# app
+# Maraponga Music
 
-A new Flutter project.
+Maraponga Music é um aplicativo desenvolvido em Flutter com o objetivo de proporcionar uma experiência musical personalizada. Com ele, você pode acessar playlists, capas de álbuns e outras funcionalidades voltadas para amantes da música.
 
-## Getting Started
+## Sobre o Projeto
 
-This project is a starting point for a Flutter application.
+Este projeto foi criado como ponto de partida para aplicações Flutter, utilizando boas práticas de desenvolvimento e organização de código. O Maraponga Music permite fácil integração de novos recursos e personalização de acordo com as necessidades do usuário.
 
-A few resources to get you started if this is your first Flutter project:
+## Recursos
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Interface moderna e responsiva  
+- Gerenciamento de playlists e faixas  
+- Suporte a múltiplas plataformas (Android, iOS, Web, Desktop)  
+- Utilização de assets locais para capas de álbuns e imagens  
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Como Executar
+
+1. Certifique-se de ter o [Flutter](https://docs.flutter.dev/get-started/install) instalado em sua máquina.
+2. Clone este repositório.
+3. Execute o comando abaixo para instalar as dependências:
+   ```sh
+   flutter pub get
+   ```
+4. Para rodar o aplicativo em modo debug:
+   ```sh
+   flutter run
+   ```
+
+## Download
+
+Um arquivo `.apk` está disponível para instalação direta em dispositivos Android. Acesse a aba [Releases](https://github.com/MatheusMLNascimento/Maraponga_music/releases) deste repositório para baixar a versão mais recente.
+
+## Estrutura do Projeto
+
+- lib - Código fonte principal do aplicativo  
+- assets - Imagens e outros recursos estáticos  
+- test - Testes automatizados  
+
+## Contribuição
+
+Sinta-se à vontade para abrir issues ou enviar pull requests com melhorias, correções ou novas funcionalidades.
+
+---
+
+Desenvolvido com ❤️ usando Flutter.
