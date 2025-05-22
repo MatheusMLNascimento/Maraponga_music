@@ -10,7 +10,7 @@ Este projeto foi criado como ponto de partida para aplicações Flutter, utiliza
 
 - Interface moderna e responsiva  
 - Gerenciamento de playlists e faixas  
-- Suporte a múltiplas plataformas (Android, iOS, Web, Desktop)  
+- Suporte para Android apenas 
 - Utilização de assets locais para capas de álbuns e imagens  
 
 ## Como Executar
