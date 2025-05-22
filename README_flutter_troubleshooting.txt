@@ -80,4 +80,12 @@ Soluções para problemas de build e instalação de APK Flutter:
    - Se o erro for de Proguard/minify, desative minify temporariamente em `build.gradle`.
    - Se o erro persistir, envie o trecho do logcat com o erro para análise detalhada.
 
+9. **warning: ignoring broken ref refs/remotes/origin/main**
+   - Esse aviso do Git significa que há uma referência remota corrompida (provavelmente um branch remoto antigo ou removido).
+   - Para corrigir:
+     1. Rode: `git remote prune origin`
+     2. Se persistir, rode: `git gc --prune=now`
+     3. Se ainda aparecer, remova manualmente o arquivo `.git/refs/remotes/origin/main` (se existir) e rode `git fetch --all`.
+   - Esse aviso não afeta o funcionamento do Flutter ou do seu projeto, mas pode ser resolvido para evitar poluição nos logs.
+
 Se ainda tiver problemas, verifique o log do dispositivo com `adb logcat` para mensagens de erro detalhadas.
