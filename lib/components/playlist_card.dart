@@ -1,7 +1,7 @@
 import 'package:app/service/local_database.dart';
 import 'package:flutter/material.dart';
 // Importa a página de detalhes da playlist
-import '../playlist_details_page.dart';
+import '../pages/playlist_details_page.dart';
 
 // Modelo de dados para playlist
 class Playlist {

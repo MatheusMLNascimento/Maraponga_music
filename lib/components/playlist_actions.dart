@@ -10,11 +10,11 @@ class PlaylistActions extends StatelessWidget {
   final VoidCallback onAddSong;
 
   const PlaylistActions({
-    Key? key,
+    super.key,
     required this.playlist,
     required this.onDelete,
     required this.onAddSong,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +58,16 @@ class PlaylistActions extends StatelessWidget {
                 backgroundColor: Colors.deepOrange,
                 foregroundColor: Colors.white,
               ),
-              icon: const Icon(Icons.add),
-              label: const Text('Adicionar música'),
-              onPressed: onAddSong,
+              icon: const Icon(Icons.shuffle),
+              label: const Text('Modo Aleatório'),
+              onPressed: () {
+                final player = Provider.of<PlayerProvider>(context, listen: false);
+                final shuffled = List<Song>.from(playlist.songs)..shuffle();
+                if (shuffled.isNotEmpty) {
+                  player.setQueue(shuffled);
+                  player.setCurrentTrack(shuffled.first);
+                }
+              },
             ),
             const SizedBox(width: 8),
             ElevatedButton.icon(
