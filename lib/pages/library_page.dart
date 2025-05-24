@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../service/local_database.dart';
 import '../../components/playlist_card.dart';
 import '../../components/bottom_nav_bar.dart';
+import '../components/actual_song_card.dart';
 
 class LibraryPage extends StatefulWidget {
   const LibraryPage({super.key});
@@ -143,8 +144,7 @@ class _LibraryPageState extends State<LibraryPage> {
                         artist: playlistData.artist,
                         items: playlistData.items,
                         duration: playlistData.duration,
-                        image: playlistData.image,
-                        tracks: playlistData.songs,
+                        image: playlistData.image, tracks: [],
                       ),
                       selected: false,
                       // Corrigido: navega para detalhes e toca a playlist
@@ -170,7 +170,7 @@ class _LibraryPageState extends State<LibraryPage> {
         ),
         // Botão flutuante acima do ActualSongCard
         Positioned(
-          bottom: 80,
+          bottom: 180,
           right: 16,
           child: FloatingActionButton(
             backgroundColor: Colors.deepOrange,
@@ -178,6 +178,12 @@ class _LibraryPageState extends State<LibraryPage> {
             tooltip: 'Criar nova playlist',
             child: const Icon(Icons.add),
           ),
+        ),
+        const Positioned(
+          bottom: 60,
+          left: 0,
+          right: 0,
+          child: ActualSongCard(),
         ),
       ],
     );

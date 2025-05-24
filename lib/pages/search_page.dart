@@ -1,11 +1,11 @@
 // ignore_for_file: deprecated_member_use
-
-import 'package:app/components/playlist_card.dart';
+import 'package:app/components/actual_song_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../components/custom_bottom_navigation_bar.dart';
+import '../../../components/music_card.dart';
 // Para o modelo Playlist
-import '../../../service/player_provider.dart';
+import '../service/player_provider.dart';
 import '../../../service/local_database.dart';
 
 class SearchPage extends StatefulWidget {
@@ -17,29 +17,27 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _controller = TextEditingController();
-  List<Song> searchResults = [];
+  List<dynamic> searchResults = [];
+  int _selectedIndex = 1;
 
-  @override
-  void initState() {
-    super.initState();
-    LocalDatabase().init();
-  }
-
-  void _search(String query) {
+  void _search(String query) async {
+    // For demonstration, let's assume you have a list of all songs in LocalDatabase().getAllSongs()
+    final allSongs = LocalDatabase().getAllSongs();
     setState(() {
-      if (query.trim().isEmpty) {
-        searchResults = [];
-      } else {
-        searchResults = LocalDatabase().searchSongs(query);
-      }
+      searchResults =
+          allSongs
+              .where(
+                (song) =>
+                    song.title.toLowerCase().contains(query.toLowerCase()) ||
+                    song.artist.toLowerCase().contains(query.toLowerCase()),
+              )
+              .toList();
     });
   }
 
-  int _selectedIndex = 1;
-
   @override
   Widget build(BuildContext context) {
-    final playerProvider = Provider.of<PlayerProvider>(context);
+    final player = Provider.of<PlayerProvider>(context, listen: false);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -49,7 +47,10 @@ class _SearchPageState extends State<SearchPage> {
             const SizedBox(height: 8),
             // Barra de busca estilizada e centralizada verticalmente
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8,
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF232323),
@@ -64,7 +65,10 @@ class _SearchPageState extends State<SearchPage> {
                     border: InputBorder.none,
                     hintText: 'Digite o nome do artista ou música',
                     hintStyle: TextStyle(color: Colors.white54),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     prefixIcon: Icon(Icons.search, color: Colors.white54),
                   ),
                   onChanged: _search,
@@ -72,59 +76,46 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
             Expanded(
-              child: searchResults.isEmpty && _controller.text.isNotEmpty
-                  ? const Center(
-                      child: Text(
-                        'Nenhum resultado',
-                        style: TextStyle(color: Colors.white54, fontSize: 18),
-                      ),
-                    )
-                  : searchResults.isEmpty
+              child:
+                  searchResults.isEmpty && _controller.text.isNotEmpty
+                      ? const Center(
+                        child: Text(
+                          'Nenhum resultado',
+                          style: TextStyle(color: Colors.white54, fontSize: 18),
+                        ),
+                      )
+                      : searchResults.isEmpty
                       ? const SizedBox.shrink()
                       : ListView.builder(
-                          itemCount: searchResults.length,
-                          itemBuilder: (context, index) {
-                            final song = searchResults[index];
-                            return ListTile(
-                              leading: Image.asset(
-                                song.image,
-                                width: 48,
-                                height: 48,
-                                fit: BoxFit.cover,
-                              ),
-                              title: Text(
-                                song.title,
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text(
-                                '${song.artist} • ${song.duration}',
-                                style: const TextStyle(color: Colors.white70),
-                              ),
-                              trailing: IconButton(
-                                icon: Icon(
-                                  playerProvider.isFavorite ? Icons.favorite : Icons.favorite_border,
-                                  color: Colors.deepOrange,
-                                ),
-                                onPressed: () async {
-                                  await LocalDatabase().addSongToFavorites(song);
-                                  setState(() {});
-                                },
-                              ),
-                              onTap: () {
-                                // Toca a música selecionada no player global
-                                playerProvider.setPlaylist(
-                                  Playlist(
-                                    title: song.title,
-                                    artist: song.artist,
-                                    items: 1,
-                                    duration: song.duration,
-                                    image: song.image, tracks: [],
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
+                        itemCount: searchResults.length,
+                        itemBuilder: (context, index) {
+                          final song = searchResults[index];
+                          return MusicCard(
+                            song: song,
+                            onPlay: () {
+                              final queue = List<Song>.from(player.queue);
+                              final currentIndex = player.queueIndex;
+                              queue.removeWhere((s) => s.id == song.id);
+                              final insertIndex = currentIndex + 1;
+                              queue.insert(
+                                insertIndex > queue.length
+                                    ? queue.length
+                                    : insertIndex,
+                                song,
+                              );
+                              player.setQueue(queue);
+                              player.setCurrentTrack(song);
+                            },
+                            showRemoveFromPlaylist: false,
+                          );
+                        },
+                      ),
+            ),
+            const Positioned(
+              bottom: 60,
+              left: 0,
+              right: 0,
+              child: ActualSongCard(),
             ),
           ],
         ),
@@ -135,9 +126,6 @@ class _SearchPageState extends State<SearchPage> {
         onTap: (index) {
           // Fecha a página de busca se trocar de aba
           if (index == _selectedIndex) return;
-          if (index != 1) {
-            Navigator.of(context).pop();
-          }
           setState(() {
             _selectedIndex = index;
           });

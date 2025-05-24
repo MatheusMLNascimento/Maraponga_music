@@ -1,5 +1,7 @@
 import 'package:app/service/local_database.dart';
+import 'package:app/service/player_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 // Importa a página de detalhes da playlist
 import '../pages/playlist_details_page.dart';
 
@@ -40,11 +42,18 @@ class PlaylistCard extends StatelessWidget {
     return Card(
       color: selected ? Colors.deepOrange.withAlpha(128) : Colors.grey[900],
       child: ListTile(
-        leading: Image.asset(
-          playlist.image,
-          width: size.width * 0.15,
-          height: size.width * 0.15,
-          fit: BoxFit.cover,
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(6), // Cantos arredondados
+          child: Image.asset(
+            playlist.image,
+            width: size.width * 0.15,
+            height: size.width * 0.15,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.music_note,
+              color: Colors.white,
+            ),
+          ),
         ),
         title: Text(
           playlist.title,
@@ -54,12 +63,34 @@ class PlaylistCard extends StatelessWidget {
           '${playlist.items} músicas • ${playlist.duration}',
           style: const TextStyle(color: Colors.white70),
         ),
-        onTap: onTap,
-        // Botão de 3 pontinhos para acessar detalhes da playlist
+        onTap: () async {
+          // Busca a playlist real do banco local pelo título (ou outro identificador)
+          final db = LocalDatabase();
+          final playlists = db.getAllPlaylists();
+          PlaylistData? realPlaylist;
+          try {
+            realPlaylist = playlists.firstWhere(
+              (p) => p.title == playlist.title,
+            );
+          } catch (e) {
+            realPlaylist = await db.createPlaylist(
+              playlist.title,
+              playlist.artist,
+              playlist.image,
+            );
+          }
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => PlaylistDetailsPage(playlist: realPlaylist!),
+            ),
+          );
+        },
+        // Botão de play para tocar a playlist
         trailing: IconButton(
-          icon: const Icon(Icons.more_vert, color: Colors.white70),
+          icon: const Icon(Icons.play_arrow, color: Colors.deepOrange),
+          tooltip: 'Reproduzir playlist',
           onPressed: () async {
-            // Busca a playlist real do banco local pelo título (ou outro identificador)
             final db = LocalDatabase();
             final playlists = db.getAllPlaylists();
             PlaylistData? realPlaylist;
@@ -74,12 +105,12 @@ class PlaylistCard extends StatelessWidget {
                 playlist.image,
               );
             }
-            // ignore: use_build_context_synchronously
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => PlaylistDetailsPage(playlist: realPlaylist!),
-              ),
-            );
+            if (realPlaylist.songs.isNotEmpty) {
+              // ignore: use_build_context_synchronously
+              final player = Provider.of<PlayerProvider>(context, listen: false);
+              player.setQueue(List.from(realPlaylist.songs));
+              player.setCurrentTrack(realPlaylist.songs.first);
+            }
           },
         ),
       ),

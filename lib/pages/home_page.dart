@@ -5,6 +5,7 @@ import '../../components/bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
 import '../../service/player_provider.dart';
 import '../../service/local_database.dart';
+import '../components/actual_song_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,7 +15,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  int _selectedPlaylist = 0;
   int _selectedIndex = 0;
   String? selectedGenre;
   List<PlaylistData> _playlists = [];
@@ -61,7 +61,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final genres = LocalDatabase().getAllGenres();
-    final player = Provider.of<PlayerProvider>(context);
+    Provider.of<PlayerProvider>(context);
 
     return Scaffold(
       appBar: CustomAppBar(size: size),
@@ -96,9 +96,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavTapped,
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const ActualSongCard(),
+          BottomNavBar(
+            currentIndex: _selectedIndex,
+            onTap: _onNavTapped,
+          ),
+        ],
       ),
     );
   }
