@@ -1,3 +1,5 @@
+import 'package:app/components/actual_song_card.dart';
+import 'package:app/components/music_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../service/local_database.dart';
@@ -116,6 +118,18 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.play_arrow, color: Colors.deepOrange),
+            tooltip: 'Reproduzir playlist',
+            onPressed: () {
+              player.setQueue(List.from(playlist.songs));
+              if (playlist.songs.isNotEmpty) {
+                player.setCurrentTrack(playlist.songs.first);
+              }
+            },
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
@@ -137,32 +151,14 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
                   itemCount: playlist.songs.length,
                   itemBuilder: (context, index) {
                     final song = playlist.songs[index];
-                    // Destaca apenas se a playlist atual for a última selecionada e a música for a atual
-                    final isPlaying = player.currentTrack != null &&
-                        player.currentTrack!.id == song.id &&
-                        ModalRoute.of(context)?.settings.arguments == playlist;
-                    return Container(
-                      color: isPlaying ? Colors.deepOrange.withOpacity(0.25) : Colors.transparent,
-                      child: ListTile(
-                        leading: Image.asset(
-                          song.image,
-                          width: 48,
-                          height: 48,
-                          fit: BoxFit.cover,
-                        ),
-                        title: Text(
-                          song.title,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          '${song.artist} • ${song.duration}',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                        onTap: () {
-                          player.setQueue(List.from(playlist.songs));
-                          player.setCurrentTrack(song);
-                        },
-                      ),
+                    return MusicCard(
+                      song: song,
+                      onPlay: () {
+                        player.setQueue(List.from(playlist.songs));
+                        player.setCurrentTrack(song);
+                      },
+                      showRemoveFromPlaylist: true,
+                      playlistId: playlist.id,
                     );
                   },
                 ),
@@ -171,7 +167,7 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
           ),
           // Botão flutuante para adicionar música, acima do actualsongcard
           Positioned(
-            bottom: 140,
+            bottom: 100,
             right: 16,
             child: FloatingActionButton(
               backgroundColor: Colors.deepOrange,
@@ -180,6 +176,12 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
               child: const Icon(Icons.add),
             ),
           ),
+          const Positioned(
+          bottom: -20,
+          left: 0,
+          right: 0,
+          child: ActualSongCard(),
+        ),
         ],
       ),
     );

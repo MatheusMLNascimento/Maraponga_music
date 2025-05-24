@@ -1,7 +1,7 @@
+import 'package:app/pages/queue_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'service/player_provider.dart';
-import 'components/actual_song_card.dart';
 import 'pages/home_page.dart';
 import 'pages/search_page.dart';
 import 'pages/library_page.dart';
@@ -36,25 +36,10 @@ class MyApp extends StatelessWidget {
         '/search': (context) => const SearchPage(),
         '/library': (context) => const LibraryPage(),
         '/actual_song': (context) => const ActualSongPage(),
+        '/queue': (context) => const QueuePage(),
         // Adicione outras rotas conforme necessário
       },
-      // Adiciona o ActualSongCard fixo acima da navigation bar
-      builder: (context, child) {
-        // Garante que o ActualSongCard tenha acesso ao Navigator usando Builder
-        return Stack(
-          children: [
-            child ?? const SizedBox.shrink(),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 56,
-              child: Builder(
-                builder: (context) => ActualSongCard(),
-              ),
-            ),
-          ],
-        );
-      },
+      
     );
   }
 }

@@ -86,6 +86,14 @@ Soluções para problemas de build e instalação de APK Flutter:
      1. Rode: `git remote prune origin`
      2. Se persistir, rode: `git gc --prune=now`
      3. Se ainda aparecer, remova manualmente o arquivo `.git/refs/remotes/origin/main` (se existir) e rode `git fetch --all`.
-   - Esse aviso não afeta o funcionamento do Flutter ou do seu projeto, mas pode ser resolvido para evitar poluição nos logs.
+     4. Se aparecer `fatal: bad object refs/remotes/origin/main` ou erro relacionado a "did not send all necessary objects", apague manualmente o arquivo `.git/refs/remotes/origin/main` e rode:
+        - `git gc --prune=now`
+        - `git remote prune origin`
+        - `git fetch --all`
+     5. Se o erro persistir, pode ser necessário remover o repositório remoto corrompido e adicionar novamente:
+        - `git remote remove origin`
+        - `git remote add origin https://github.com/MatheusMLNascimento/Maraponga_music.git`
+        - `git fetch --all`
+   - Esses avisos/erros geralmente indicam referências remotas corrompidas ou problemas no repositório remoto. Corrija localmente e, se necessário, re-clone o repositório.
 
 Se ainda tiver problemas, verifique o log do dispositivo com `adb logcat` para mensagens de erro detalhadas.

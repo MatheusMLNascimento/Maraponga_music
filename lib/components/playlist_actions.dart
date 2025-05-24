@@ -47,7 +47,7 @@ class PlaylistActions extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
               icon: const Icon(Icons.queue_music),
-              label: const Text('Adicionar à fila'),
+              label: const Text('Fila'),
               onPressed: () {
                 player.addToQueue(playlist.songs);
               },
@@ -59,7 +59,7 @@ class PlaylistActions extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
               icon: const Icon(Icons.shuffle),
-              label: const Text('Modo Aleatório'),
+              label: const Text('Aleatório'),
               onPressed: () {
                 final player = Provider.of<PlayerProvider>(context, listen: false);
                 final shuffled = List<Song>.from(playlist.songs)..shuffle();
